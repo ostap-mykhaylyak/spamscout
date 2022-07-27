@@ -3,9 +3,9 @@
  * Plugin Name:       SpamScout
  * Plugin URI:        https://spamscout.net/
  * Description:       Light and invisible method to block spam when spam is posted.
- * Version:           0.0.1
- * Requires at least: 5.2
- * Requires PHP:      7.2
+ * Version:           1.0.0
+ * Requires at least: 2.7.0
+ * Requires PHP:      7.3
  * Author:            SpamScout
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
@@ -17,7 +17,7 @@ class SpamScout
 
     public function __construct()
     {
-        add_action('init', array($this, 'spamscout_init'), 1);
+        add_action('init', array($this, 'spamscout_init'), 1); // 1.5.0	Introduced.
     }
 
     function spamscout_init()
@@ -26,11 +26,17 @@ class SpamScout
         {
             $spamscout = new SpamScout();
             $ip = $spamscout->get_user_ip();
-            $result = $spamscout->is_spam($ip);
+			
+			if(filter_var($ip, FILTER_VALIDATE_IP)){
+				$result = $spamscout->is_spam($ip);
+			}else{
+				//Invalid IP?
+				wp_die('Invalid IP', 'Invalid IP', ['response' => 403]);
+			}
 
             if ($result['spam'] == true)
             {
-                wp_die($ip, $ip, ['response' => 403]);
+                wp_die('Your IP ' . $ip . ' has been blocked for security reason.', 'Your IP ' . $ip . ' has been blocked for security reason.', ['response' => 403]);
             }
         }
     }
@@ -38,6 +44,8 @@ class SpamScout
     public function is_spam($ip)
     {
         $spamscout_options = get_option('spamscout_option_name');
+
+		// 2.7.0	Introduced.
         $request = wp_remote_get('https://api.spamscout.net/check/' . $ip . '/key/' . $spamscout_options['api_key'], array(
             'sslverify' => false,
             'timeout' => 60
@@ -68,7 +76,8 @@ class SpamScout
         {
             $ip = $_SERVER['REMOTE_ADDR'];
         }
-        return apply_filters('wpb_get_ip', $ip);
+		
+		return htmlspecialchars(strip_tags($ip));
     }
 
     public function spamscout_admin_plugin_page()
@@ -182,10 +191,3 @@ else
 {
     $spamscout = new SpamScout();
 }
-
-/*
- * Retrieve this value with:
- * $spamscout_options = get_option( 'spamscout_option_name' ); // Array of All Options
- * $api_key = $spamscout_options['api_key']; // API Key
-*/
-

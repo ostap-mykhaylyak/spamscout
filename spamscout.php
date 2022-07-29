@@ -34,7 +34,7 @@ class SpamScout
 				$result = $spamscout->is_spam($spamscout->get_user_ip());
 			}
 
-            if ($result['spam'] == true)
+            if(isset($result['spam']) && $result['spam'] == true)
             {
                 wp_die('Your IP ' . $ip . ' has been blocked for security reason.', 'Your IP ' . $ip . ' has been blocked for security reason.', ['response' => 403]);
             }

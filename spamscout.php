@@ -25,13 +25,13 @@ class SpamScout
         if ($_SERVER['REQUEST_METHOD'] == 'POST')
         {
             $spamscout = new SpamScout();
-            $ip = $spamscout->get_user_ip();
 			
-			if(filter_var($ip, FILTER_VALIDATE_IP)){
-				$result = $spamscout->is_spam($ip);
-			}else{
+			if($spamscout->get_user_ip() == false){
 				//Invalid IP?
 				wp_die('Invalid IP', 'Invalid IP', ['response' => 403]);
+				
+			}else{
+				$result = $spamscout->is_spam($spamscout->get_user_ip());
 			}
 
             if ($result['spam'] == true)
@@ -46,10 +46,10 @@ class SpamScout
         $spamscout_options = get_option('spamscout_option_name');
 
 		// 2.7.0	Introduced.
-        $request = wp_remote_get('https://api.spamscout.net/check/' . $ip . '/key/' . $spamscout_options['api_key'], array(
+        $request = wp_remote_get('https://api.spamscout.net/check/' . $ip . '/key/' . $spamscout_options['api_key'], [
             'sslverify' => false,
             'timeout' => 60
-        ));
+        ]);
 
         if (is_wp_error($request))
         {
@@ -73,7 +73,15 @@ class SpamScout
 			?? $_SERVER['REMOTE_ADDR'] 
 			?? '0.0.0.0';
 		
-		return htmlspecialchars(strip_tags($ip));
+		$ip = sanitize_text_field($ip);
+		
+		if(filter_var($ip, FILTER_VALIDATE_IP))
+		{
+            return $ip;
+        }else{
+			return false;
+		}
+		
     }
 
     public function spamscout_admin_plugin_page()

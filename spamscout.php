@@ -21,7 +21,7 @@ class SpamScout
     public function __construct()
     {
         add_action('init', array($this, 'spamscout_init'), 1); // 1.5.0	Introduced.
-		add_action('transition_comment_status', 'spamscout_comment_report', 10, 3);
+		add_action('transition_comment_status', array($this, 'spamscout_comment_report'), 10, 3);
     }
 
     function spamscout_init()

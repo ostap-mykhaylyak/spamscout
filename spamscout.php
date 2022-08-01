@@ -3,13 +3,16 @@
  * Plugin Name:       SpamScout
  * Plugin URI:        https://spamscout.net/
  * Description:       Light and invisible method to block spam when spam is posted.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Requires at least: 2.7.0
  * Requires PHP:      7.3
  * Author:            SpamScout
+ * Author URI:		  https://spamscout.net/
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  */
+
+if(!defined('ABSPATH')) exit;
 
 class SpamScout
 {
@@ -18,6 +21,7 @@ class SpamScout
     public function __construct()
     {
         add_action('init', array($this, 'spamscout_init'), 1); // 1.5.0	Introduced.
+		add_action('transition_comment_status', 'spamscout_comment_report', 10, 3);
     }
 
     function spamscout_init()
@@ -61,6 +65,23 @@ class SpamScout
 
         return $data;
     }
+	
+	function spamscout_comment_report($new_status, $old_status, $comment)
+{
+    if ($old_status != $new_status)
+    {
+        if ($new_status == 'spam' or $new_status == 'delete')
+        {
+			$spamscout_options = get_option('spamscout_option_name');
+
+			// 2.7.0	Introduced.
+			$request = wp_remote_get('https://api.spamscout.net/report/' . $comment->comment_author_IP . '/key/' . $spamscout_options['api_key'], [
+				'sslverify' => false,
+				'timeout' => 60
+			]);
+        }
+    }
+}
 
     public function get_user_ip()
     {

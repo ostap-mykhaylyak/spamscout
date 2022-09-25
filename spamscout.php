@@ -3,7 +3,7 @@
  * Plugin Name:       SpamScout
  * Plugin URI:        https://spamscout.net/
  * Description:       Light and invisible method to block spam when spam is posted.
- * Version:           1.0.1
+ * Version:           1.0.2
  * Requires at least: 2.7.0
  * Requires PHP:      7.3
  * Author:            SpamScout

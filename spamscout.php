@@ -30,12 +30,14 @@ class SpamScout
         {
             $spamscout = new SpamScout();
 			
-			if($spamscout->get_user_ip() == false){
+			$ip = $spamscout->get_user_ip();
+			
+			if($ip == false){
 				//Invalid IP?
 				wp_die('Invalid IP', 'Invalid IP', ['response' => 403]);
 				
 			}else{
-				$result = $spamscout->is_spam($spamscout->get_user_ip());
+				$result = $spamscout->is_spam($ip);
 			}
 
             if(isset($result['spam']) && $result['spam'] == true)
@@ -50,9 +52,10 @@ class SpamScout
         $spamscout_options = get_option('spamscout_option_name');
 
 		// 2.7.0	Introduced.
-        $request = wp_remote_get('https://api.spamscout.net/check/' . $ip . '/key/' . $spamscout_options['api_key'], [
+        $request = wp_remote_get('https://api.spamscout.net/check/' . $ip, [
             'sslverify' => false,
-            'timeout' => 60
+            'timeout' => 60,
+			'headers' => ['Authorization' => $spamscout_options['api_key']]
         ]);
 
         if (is_wp_error($request))
@@ -70,14 +73,16 @@ class SpamScout
 {
     if ($old_status != $new_status)
     {
-        if ($new_status == 'spam' or $new_status == 'delete')
+        if ($new_status == 'spam')
         {
 			$spamscout_options = get_option('spamscout_option_name');
 
 			// 2.7.0	Introduced.
-			$request = wp_remote_get('https://api.spamscout.net/report/' . $comment->comment_author_IP . '/key/' . $spamscout_options['api_key'], [
+			$request = wp_remote_get('https://api.spamscout.net/report/' . $comment->comment_author_IP, [
 				'sslverify' => false,
-				'timeout' => 60
+				'timeout' => 60,
+				'headers' => ['Authorization' => $spamscout_options['api_key']]
+             ));
 			]);
         }
     }

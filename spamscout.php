@@ -52,7 +52,7 @@ class SpamScout
         $spamscout_options = get_option('spamscout_option_name');
 
 		// 2.7.0	Introduced.
-        $request = wp_remote_get('https://api.spamscout.net/check/' . $ip, [
+        $request = wp_remote_get('https://spamscout.net/api/check/' . $ip, [
             'sslverify' => false,
             'timeout' => 60,
 			'headers' => ['Authorization' => $spamscout_options['api_key']]
@@ -78,7 +78,7 @@ class SpamScout
 			$spamscout_options = get_option('spamscout_option_name');
 
 			// 2.7.0	Introduced.
-			$request = wp_remote_get('https://api.spamscout.net/report/' . $comment->comment_author_IP, [
+			$request = wp_remote_get('https://spamscout.net/api/report/' . $comment->comment_author_IP, [
 				'sslverify' => false,
 				'timeout' => 60,
 				'headers' => ['Authorization' => $spamscout_options['api_key']]
